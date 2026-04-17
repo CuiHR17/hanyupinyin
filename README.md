@@ -24,7 +24,7 @@ You can install the development version of **hanyupinyin** from GitHub:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("yourusername/hanyupinyin")
+devtools::install_github("CuiHR17/hanyupinyin")
 ```
 
 ## Usage
