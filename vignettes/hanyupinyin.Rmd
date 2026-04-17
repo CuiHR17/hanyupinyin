@@ -1,0 +1,84 @@
+---
+title: "Converting Chinese to Pinyin with hanyupinyin"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Converting Chinese to Pinyin with hanyupinyin}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(hanyupinyin)
+```
+
+The **hanyupinyin** package converts Chinese characters into Hanyu Pinyin. It is designed to be fast, vectorized, and easy to use for both interactive analysis and data-cleaning pipelines.
+
+## Basic conversion
+
+The workhorse function is `to_pinyin()`:
+
+```{r}
+to_pinyin("春眠不觉晓")
+to_pinyin(c("你好", "世界"))
+```
+
+By default the separator is `"_"` and tones are rendered as numeric suffixes. You can change either:
+
+```{r}
+to_pinyin("Hello 世界", sep = " ", other_replace = "?")
+```
+
+## Toneless output and initials
+
+For situations where you only need the alphabetic form without tones, use `to_pinyin_toneless()`:
+
+```{r}
+to_pinyin_toneless("中华人民共和国")
+```
+
+To extract just the first letter of each syllable:
+
+```{r}
+to_pinyin_initials("中华人民共和国")
+```
+
+## Handling polyphones
+
+Chinese has many characters with multiple readings. By default `to_pinyin()` converts characters independently, which works well for single characters but can be wrong in context. Enable the built-in phrase table with `polyphone = TRUE`:
+
+```{r}
+to_pinyin("银行行长", polyphone = TRUE)
+```
+
+You can also add your own phrases:
+
+```{r}
+add_phrase("测试短语", "ce4 shi4 duan3 yu3")
+to_pinyin("测试短语", polyphone = TRUE)
+```
+
+## Data-cleaning helpers
+
+A common use case is turning Chinese column names from imported data (e.g. SAS, Excel) into valid R variable names:
+
+```{r}
+to_varname(c("姓名", "年龄", "性别"))
+to_varname("1开始")
+```
+
+For URL slugs:
+
+```{r}
+to_slug("2026年报告")
+```
+
+## Dictionary source
+
+The package bundles the `kMandarin` field from the Unicode Unihan Database (Version 17.0), which covers more than 44,000 unique Chinese characters. Because the data come from an open standard, you can be confident in their provenance and stability.

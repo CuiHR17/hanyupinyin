@@ -1,0 +1,29 @@
+Package: hanyupinyin
+Title: Convert Chinese Characters into Hanyu Pinyin
+Version: 0.1.0
+Authors@R: 
+    person("Haoran", "Cui", , "hao.ran.cui@ktstat.com", role = c("aut", "cre"))
+Description: Convert Chinese characters into Hanyu Pinyin (the official 
+    romanization system for Standard Chinese) with support for tones, 
+    toneless output, initials, URL slugs, and valid R variable names. 
+    The package was inspired by the now-orphaned CRAN package 'pinyin' 
+    (archived in April 2026 after the maintainer became unreachable). 
+    'hanyupinyin' is a ground-up rewrite using the authoritative Unicode 
+    Unihan database, a vectorized engine, and modern R practices.
+License: MIT + file LICENSE
+URL: https://github.com/CuiHR17/hanyupinyin
+BugReports: https://github.com/CuiHR17/hanyupinyin/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends: 
+    R (>= 3.5)
+Imports: 
+    stringi
+Suggests: 
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+LazyData: true
