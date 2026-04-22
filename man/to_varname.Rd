@@ -29,6 +29,9 @@ segmentation.}
 \item{other_replace}{How to handle non-Chinese characters. \code{NULL} means
 leave them as-is. A single character string replaces them.}
 }
+\value{
+A character vector of valid R variable names.
+}
 \description{
 Useful when cleaning imported data (e.g. from SAS or Excel) where column
 labels are in Chinese.

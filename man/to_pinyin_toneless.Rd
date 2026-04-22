@@ -19,6 +19,9 @@ segmentation.}
 \item{other_replace}{How to handle non-Chinese characters. \code{NULL} means
 leave them as-is. A single character string replaces them.}
 }
+\value{
+A character vector of the same length as \code{x}.
+}
 \description{
 A convenience wrapper around \code{\link[=to_pinyin]{to_pinyin()}} with \code{tone = FALSE}.
 }

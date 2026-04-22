@@ -17,6 +17,9 @@ segmentation.}
 \item{other_replace}{How to handle non-Chinese characters. \code{NULL} means
 leave them as-is. A single character string replaces them.}
 }
+\value{
+A character vector of URL-friendly slug strings.
+}
 \description{
 Create URL-Friendly Slug from Chinese Text
 }

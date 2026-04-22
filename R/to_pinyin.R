@@ -184,6 +184,7 @@ to_pinyin_poly <- function(x, sep, tone, other_replace) {
 #' @param x A character vector.
 #' @param sep Separator between syllables. Default is `"_"`.
 #' @inheritParams to_pinyin
+#' @return A character vector of the same length as `x`.
 #' @export
 #' @examples
 #' to_pinyin_toneless("\u6625\u7720\u4e0d\u89c9\u6653")
@@ -197,6 +198,7 @@ to_pinyin_toneless <- function(x, sep = "_", polyphone = FALSE, other_replace = 
 #'
 #' @param x A character vector.
 #' @inheritParams to_pinyin
+#' @return A character vector of the same length as `x`.
 #' @export
 #' @examples
 #' to_pinyin_initials("\u4e2d\u534e\u4eba\u6c11\u5171\u548c\u56fd")
@@ -214,6 +216,7 @@ to_pinyin_initials <- function(x, polyphone = FALSE, other_replace = NULL) {
 #'
 #' @param x A character vector.
 #' @inheritParams to_pinyin
+#' @return A character vector of URL-friendly slug strings.
 #' @export
 #' @examples
 #' to_slug("2026\u5e74\u62a5\u544a")
@@ -238,6 +241,7 @@ to_slug <- function(x, polyphone = FALSE, other_replace = NULL) {
 #' @param abbrev If not `NULL`, an integer giving the maximum length of each
 #'   syllable (e.g. `abbrev = 4` truncates `zhong` to `zhon`).
 #' @inheritParams to_pinyin
+#' @return A character vector of valid R variable names.
 #' @export
 #' @examples
 #' to_varname(c("\u59d3\u540d", "\u5e74\u9f84", "\u6027\u522b"))

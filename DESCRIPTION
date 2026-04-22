@@ -1,6 +1,6 @@
 Package: hanyupinyin
 Title: Convert Chinese Characters into Hanyu Pinyin
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     person("Haoran", "Cui", , "hao.ran.cui@ktstat.com", role = c("aut", "cre"))
 Description: Convert Chinese characters into Hanyu Pinyin (the official 
@@ -9,7 +9,9 @@ Description: Convert Chinese characters into Hanyu Pinyin (the official
     The package was inspired by the now-orphaned CRAN package 'pinyin' 
     (archived in April 2026 after the maintainer became unreachable). 
     'hanyupinyin' is a ground-up rewrite using the authoritative Unicode 
-    Unihan database, a vectorized engine, and modern R practices.
+    Unihan database, a vectorized engine, and modern R practices. 
+    Dictionary data are derived from the Unicode Unihan Database 
+    (Unicode Consortium, 2025) <https://www.unicode.org/reports/tr38/>.
 License: MIT + file LICENSE
 URL: https://github.com/CuiHR17/hanyupinyin
 BugReports: https://github.com/CuiHR17/hanyupinyin/issues
