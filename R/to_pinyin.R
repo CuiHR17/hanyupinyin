@@ -334,6 +334,8 @@ add_phrase <- function(phrase, reading) {
   if (!is.character(reading) || length(reading) != 1) {
     stop("`reading` must be a single string.", call. = FALSE)
   }
+  # Normalise separators: accept "_" or "-" as syllable separators too
+  reading <- gsub("[_-]", " ", reading)
   env <- get_phrase_env()
   style <- detect_reading_style(reading)
   if (style == "tone") {
