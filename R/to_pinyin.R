@@ -5,14 +5,17 @@
 #' (`kMandarin`) as its authoritative source.
 #'
 #' @param x A character vector.
-#' @param sep Separator between syllables. Default is `"_"`.
+#' @param sep Separator inserted between syllables in the **output**.
+#'   Default is `"_"`. This does not affect how readings are supplied to
+#'   [add_phrase()]; see its documentation for details.
 #' @param tone If `TRUE` (default), returns Pinyin with numeric tones (e.g.
 #'   `qiu1`). If `FALSE`, returns toneless Pinyin (e.g. `qiu`). If `"marks"`,
 #'   returns Pinyin with diacritic tone marks (e.g. `qiū`).
 #' @param polyphone If `FALSE` (default), each character is converted
-#'   independently using its most common reading. If `TRUE`, a built-in phrase
-#'   table is used to resolve common polyphones via greedy longest-match
-#'   segmentation.
+#'   independently using its most common reading from the Unicode Unihan
+#'   dictionary. If `TRUE`, a built-in phrase table (50+ common ambiguous words)
+#'   is used to resolve polyphones via greedy longest-match segmentation.
+#'   Users can extend the table with [add_phrase()].
 #' @param other_replace How to handle non-Chinese characters. `NULL` means
 #'   leave them as-is. A single character string replaces them.
 #'
@@ -312,21 +315,37 @@ to_varname <- function(x,
 #' Add a Custom Polyphone Phrase
 #'
 #' Allows users to extend the built-in phrase table with their own
-#' multi-character phrases and readings. The reading can be given in either
-#' numeric tone form (e.g. `"hang2 zhang3"`) or tone-mark form
-#' (e.g. `"háng zhǎng"`); both forms are stored internally so the phrase
-#' works correctly with all `tone` settings.
+#' multi-character phrases and readings. The function automatically detects the
+#' input format and stores both a numeric-tone version and a tone-mark version
+#' internally, so the phrase works correctly with all settings of the `tone`
+#' argument in [to_pinyin()].
 #'
-#' @param phrase A Chinese character string (e.g. `"\u884c\u957f"`).
-#' @param reading The corresponding Pinyin reading as a single string
-#'   (e.g. `"hang2 zhang3"` or `"háng zhǎng"`).
+#' @param phrase A Chinese character string of at least two characters
+#'   (e.g. `"\u884c\u957f"`).
+#' @param reading The corresponding Pinyin reading. Syllables should be
+#'   separated by spaces (e.g. `"hang2 zhang3"` or `"háng zhǎng"`).
+#'   Underscores (`_`) and hyphens (`-`) are also accepted and will be
+#'   normalised to spaces automatically. Toneless input (e.g. `"hang zhang"`)
+#'   is allowed but will be treated as-is for both numeric and mark outputs.
+#'
+#' @details The separator used in `reading` is independent of the `sep`
+#'   argument to [to_pinyin()]. The latter controls only the output format.
 #'
 #' @return Invisibly returns `NULL`.
 #' @export
 #' @examples
+#' # Numeric input -- marks are derived automatically
 #' add_phrase("\u884c\u957f", "hang2 zhang3")
 #' to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE)
 #' to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE, tone = "marks")
+#'
+#' # Tone-mark input -- numeric tones are derived automatically
+#' add_phrase("\u548c\u5e73", "h\u00e9 p\u00edng")
+#' to_pinyin("\u548c\u5e73", polyphone = TRUE, tone = "marks")
+#'
+#' # Underscore separators are also accepted
+#' add_phrase("\u6d4b\u8bd5", "ce4_shi4")
+#' to_pinyin("\u6d4b\u8bd5", polyphone = TRUE)
 add_phrase <- function(phrase, reading) {
   if (!is.character(phrase) || length(phrase) != 1 || nchar(phrase) < 2) {
     stop("`phrase` must be a single string of at least 2 Chinese characters.", call. = FALSE)
@@ -350,7 +369,16 @@ add_phrase <- function(phrase, reading) {
 
 #' List Custom Polyphone Phrases
 #'
-#' @return A data frame with columns `phrase`, `tone`, and `marks`.
+#' Returns all user-defined phrases added via [add_phrase()] in the current
+#' R session, together with their internally-stored numeric-tone and tone-mark
+#' readings.
+#'
+#' @return A data frame with three columns:
+#'   \describe{
+#'     \item{phrase}{The Chinese character phrase.}
+#'     \item{tone}{The reading with numeric tones (e.g. `"hang2 zhang3"`).}
+#'     \item{marks}{The reading with diacritic tone marks (e.g. `"háng zhǎng"`).}
+#'   }
 #' @export
 #' @examples
 #' list_phrases()

@@ -9,16 +9,19 @@ to_pinyin(x, sep = "_", tone = TRUE, polyphone = FALSE, other_replace = NULL)
 \arguments{
 \item{x}{A character vector.}
 
-\item{sep}{Separator between syllables. Default is \code{"_"}.}
+\item{sep}{Separator inserted between syllables in the \strong{output}.
+Default is \code{"_"}. This does not affect how readings are supplied to
+\code{\link[=add_phrase]{add_phrase()}}; see its documentation for details.}
 
 \item{tone}{If \code{TRUE} (default), returns Pinyin with numeric tones (e.g.
 \code{qiu1}). If \code{FALSE}, returns toneless Pinyin (e.g. \code{qiu}). If \code{"marks"},
 returns Pinyin with diacritic tone marks (e.g. \code{qiū}).}
 
 \item{polyphone}{If \code{FALSE} (default), each character is converted
-independently using its most common reading. If \code{TRUE}, a built-in phrase
-table is used to resolve common polyphones via greedy longest-match
-segmentation.}
+independently using its most common reading from the Unicode Unihan
+dictionary. If \code{TRUE}, a built-in phrase table (50+ common ambiguous words)
+is used to resolve polyphones via greedy longest-match segmentation.
+Users can extend the table with \code{\link[=add_phrase]{add_phrase()}}.}
 
 \item{other_replace}{How to handle non-Chinese characters. \code{NULL} means
 leave them as-is. A single character string replaces them.}

@@ -7,23 +7,40 @@
 add_phrase(phrase, reading)
 }
 \arguments{
-\item{phrase}{A Chinese character string (e.g. \code{"\\u884c\\u957f"}).}
+\item{phrase}{A Chinese character string of at least two characters
+(e.g. \code{"\\u884c\\u957f"}).}
 
-\item{reading}{The corresponding Pinyin reading as a single string
-(e.g. \code{"hang2 zhang3"} or \code{"háng zhǎng"}).}
+\item{reading}{The corresponding Pinyin reading. Syllables should be
+separated by spaces (e.g. \code{"hang2 zhang3"} or \code{"háng zhǎng"}).
+Underscores (\verb{_}) and hyphens (\code{-}) are also accepted and will be
+normalised to spaces automatically. Toneless input (e.g. \code{"hang zhang"})
+is allowed but will be treated as-is for both numeric and mark outputs.}
 }
 \value{
 Invisibly returns \code{NULL}.
 }
 \description{
 Allows users to extend the built-in phrase table with their own
-multi-character phrases and readings. The reading can be given in either
-numeric tone form (e.g. \code{"hang2 zhang3"}) or tone-mark form
-(e.g. \code{"háng zhǎng"}); both forms are stored internally so the phrase
-works correctly with all \code{tone} settings.
+multi-character phrases and readings. The function automatically detects the
+input format and stores both a numeric-tone version and a tone-mark version
+internally, so the phrase works correctly with all settings of the \code{tone}
+argument in \code{\link[=to_pinyin]{to_pinyin()}}.
+}
+\details{
+The separator used in \code{reading} is independent of the \code{sep}
+argument to \code{\link[=to_pinyin]{to_pinyin()}}. The latter controls only the output format.
 }
 \examples{
+# Numeric input -- marks are derived automatically
 add_phrase("\u884c\u957f", "hang2 zhang3")
 to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE)
 to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE, tone = "marks")
+
+# Tone-mark input -- numeric tones are derived automatically
+add_phrase("\u548c\u5e73", "h\u00e9 p\u00edng")
+to_pinyin("\u548c\u5e73", polyphone = TRUE, tone = "marks")
+
+# Underscore separators are also accepted
+add_phrase("\u6d4b\u8bd5", "ce4_shi4")
+to_pinyin("\u6d4b\u8bd5", polyphone = TRUE)
 }

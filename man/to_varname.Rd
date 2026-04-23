@@ -22,9 +22,10 @@ via \code{\link[=make.names]{make.names()}}.}
 syllable (e.g. \code{abbrev = 4} truncates \code{zhong} to \code{zhon}).}
 
 \item{polyphone}{If \code{FALSE} (default), each character is converted
-independently using its most common reading. If \code{TRUE}, a built-in phrase
-table is used to resolve common polyphones via greedy longest-match
-segmentation.}
+independently using its most common reading from the Unicode Unihan
+dictionary. If \code{TRUE}, a built-in phrase table (50+ common ambiguous words)
+is used to resolve polyphones via greedy longest-match segmentation.
+Users can extend the table with \code{\link[=add_phrase]{add_phrase()}}.}
 
 \item{other_replace}{How to handle non-Chinese characters. \code{NULL} means
 leave them as-is. A single character string replaces them.}

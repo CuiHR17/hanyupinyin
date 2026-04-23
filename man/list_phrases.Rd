@@ -7,10 +7,17 @@
 list_phrases()
 }
 \value{
-A data frame with columns \code{phrase}, \code{tone}, and \code{marks}.
+A data frame with three columns:
+\describe{
+\item{phrase}{The Chinese character phrase.}
+\item{tone}{The reading with numeric tones (e.g. \code{"hang2 zhang3"}).}
+\item{marks}{The reading with diacritic tone marks (e.g. \code{"háng zhǎng"}).}
+}
 }
 \description{
-List Custom Polyphone Phrases
+Returns all user-defined phrases added via \code{\link[=add_phrase]{add_phrase()}} in the current
+R session, together with their internally-stored numeric-tone and tone-mark
+readings.
 }
 \examples{
 list_phrases()
