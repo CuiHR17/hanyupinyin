@@ -12,6 +12,16 @@ test_that("toneless mode works", {
   expect_equal(to_pinyin_toneless("\u6625\u7720\u4e0d\u89c9\u6653"), "chun_mian_bu_jue_xiao")
 })
 
+test_that("tone marks mode works", {
+  expect_equal(to_pinyin_marks("\u6625\u7720\u4e0d\u89c9\u6653"), "chūn_mián_bù_jué_xiǎo")
+  expect_equal(to_pinyin_marks("Hello \u4e16\u754c", sep = " "), "Hello shì jiè")
+})
+
+test_that("tone marks handles neutral tone", {
+  # Characters marked as tone 5 in Unihan (e.g. \u4e86 le5) lose the mark
+  expect_equal(to_pinyin_marks("\u597d\u4e86"), "hǎo_le")
+})
+
 test_that("initials extraction works", {
   expect_equal(to_pinyin_initials("\u4e2d\u534e\u4eba\u6c11\u5171\u548c\u56fd"), "zhrmghg")
 })

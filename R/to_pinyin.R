@@ -31,14 +31,15 @@ to_pinyin <- function(x,
     stop("`x` must be a character vector.", call. = FALSE)
   }
 
+  env <- if (tone) .pinyin_env else .pinyin_toneless_env
   if (polyphone) {
     vapply(x, to_pinyin_poly, character(1),
-           sep = sep, tone = tone, other_replace = other_replace,
+           sep = sep, env = env, other_replace = other_replace,
            USE.NAMES = FALSE
     )
   } else {
     vapply(x, to_pinyin_single, character(1),
-           sep = sep, tone = tone, other_replace = other_replace,
+           sep = sep, env = env, other_replace = other_replace,
            USE.NAMES = FALSE
     )
   }
@@ -89,13 +90,12 @@ join_tokens <- function(converted, was_cjk, sep, other_replace) {
 }
 
 #' @noRd
-to_pinyin_single <- function(x, sep, tone, other_replace) {
+to_pinyin_single <- function(x, sep, env, other_replace) {
   if (is.na(x) || nchar(x) == 0) {
     return(x)
   }
 
   tokens <- segment_text(x)
-  env <- if (tone) .pinyin_env else .pinyin_toneless_env
 
   out <- vapply(tokens, function(tok) {
     if (is_cjk(tok)) {
@@ -113,13 +113,12 @@ to_pinyin_single <- function(x, sep, tone, other_replace) {
 }
 
 #' @noRd
-to_pinyin_poly <- function(x, sep, tone, other_replace) {
+to_pinyin_poly <- function(x, sep, env, other_replace) {
   if (is.na(x) || nchar(x) == 0) {
     return(x)
   }
 
   tokens <- segment_text(x)
-  env <- if (tone) .pinyin_env else .pinyin_toneless_env
   phrases <- get_phrase_env()
   phrase_keys <- ls(phrases, all.names = TRUE)
   phrase_keys <- phrase_keys[order(nchar(phrase_keys), decreasing = TRUE)]
@@ -190,6 +189,38 @@ to_pinyin_poly <- function(x, sep, tone, other_replace) {
 #' to_pinyin_toneless("\u6625\u7720\u4e0d\u89c9\u6653")
 to_pinyin_toneless <- function(x, sep = "_", polyphone = FALSE, other_replace = NULL) {
   to_pinyin(x, sep = sep, tone = FALSE, polyphone = polyphone, other_replace = other_replace)
+}
+
+#' Convert to Pinyin with Tone Marks
+#'
+#' A convenience wrapper that returns Pinyin with diacritic tone marks
+#' (e.g. `qiū` instead of `qiu1`). The data come directly from the
+#' Unicode Unihan `kMandarin` field, so they are authoritative and
+#' correctly handle edge cases such as the neutral tone (e.g. `zi5` → `zi`).
+#'
+#' @param x A character vector.
+#' @param sep Separator between syllables. Default is `"_"`.
+#' @inheritParams to_pinyin
+#' @return A character vector of the same length as `x`.
+#' @export
+#' @examples
+#' to_pinyin_marks("\u6625\u7720\u4e0d\u89c9\u6653")
+#' to_pinyin_marks("Hello \u4e16\u754c", sep = " ")
+to_pinyin_marks <- function(x, sep = "_", polyphone = FALSE, other_replace = NULL) {
+  if (!is.character(x)) {
+    stop("`x` must be a character vector.", call. = FALSE)
+  }
+  if (polyphone) {
+    vapply(x, to_pinyin_poly, character(1),
+           sep = sep, env = .pinyin_marks_env, other_replace = other_replace,
+           USE.NAMES = FALSE
+    )
+  } else {
+    vapply(x, to_pinyin_single, character(1),
+           sep = sep, env = .pinyin_marks_env, other_replace = other_replace,
+           USE.NAMES = FALSE
+    )
+  }
 }
 
 #' Extract Pinyin Initials

@@ -40,6 +40,10 @@ to_pinyin("春眠不觉晓")
 to_pinyin_toneless("中华人民共和国")
 #> [1] "zhong_hua_ren_min_gong_he_guo"
 
+# Tone marks (diacritics)
+to_pinyin_marks("春眠不觉晓")
+#> [1] "chūn_mián_bù_jué_xiǎo"
+
 # Initials only
 to_pinyin_initials("中华人民共和国")
 #> [1] "zhrmghg"
