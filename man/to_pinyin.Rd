@@ -12,7 +12,8 @@ to_pinyin(x, sep = "_", tone = TRUE, polyphone = FALSE, other_replace = NULL)
 \item{sep}{Separator between syllables. Default is \code{"_"}.}
 
 \item{tone}{If \code{TRUE} (default), returns Pinyin with numeric tones (e.g.
-\code{qiu1}). If \code{FALSE}, returns toneless Pinyin (e.g. \code{qiu}).}
+\code{qiu1}). If \code{FALSE}, returns toneless Pinyin (e.g. \code{qiu}). If \code{"marks"},
+returns Pinyin with diacritic tone marks (e.g. \code{qiū}).}
 
 \item{polyphone}{If \code{FALSE} (default), each character is converted
 independently using its most common reading. If \code{TRUE}, a built-in phrase
@@ -34,4 +35,5 @@ The function is fully vectorized and uses the Unicode Unihan database
 to_pinyin("\u6625\u7720\u4e0d\u89c9\u6653")
 to_pinyin("Hello \u4e16\u754c", sep = " ", other_replace = "?")
 to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE)
+to_pinyin("\u6625\u7720\u4e0d\u89c9\u6653", tone = "marks")
 }

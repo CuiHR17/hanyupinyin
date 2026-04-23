@@ -10,17 +10,20 @@ add_phrase(phrase, reading)
 \item{phrase}{A Chinese character string (e.g. \code{"\\u884c\\u957f"}).}
 
 \item{reading}{The corresponding Pinyin reading as a single string
-(e.g. \code{"hang2 zhang3"} or \code{"hang_zhang"}). The separator used here
-will be preserved when \code{polyphone = TRUE}.}
+(e.g. \code{"hang2 zhang3"} or \code{"háng zhǎng"}).}
 }
 \value{
 Invisibly returns \code{NULL}.
 }
 \description{
 Allows users to extend the built-in phrase table with their own
-multi-character phrases and readings.
+multi-character phrases and readings. The reading can be given in either
+numeric tone form (e.g. \code{"hang2 zhang3"}) or tone-mark form
+(e.g. \code{"háng zhǎng"}); both forms are stored internally so the phrase
+works correctly with all \code{tone} settings.
 }
 \examples{
 add_phrase("\u884c\u957f", "hang2 zhang3")
 to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE)
+to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE, tone = "marks")
 }

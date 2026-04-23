@@ -23,10 +23,7 @@ leave them as-is. A single character string replaces them.}
 A character vector of the same length as \code{x}.
 }
 \description{
-A convenience wrapper that returns Pinyin with diacritic tone marks
-(e.g. \code{qiū} instead of \code{qiu1}). The data come directly from the
-Unicode Unihan \code{kMandarin} field, so they are authoritative and
-correctly handle edge cases such as the neutral tone (e.g. \code{zi5} → \code{zi}).
+A convenience wrapper around \code{\link[=to_pinyin]{to_pinyin()}} with \code{tone = "marks"}.
 }
 \examples{
 to_pinyin_marks("\u6625\u7720\u4e0d\u89c9\u6653")

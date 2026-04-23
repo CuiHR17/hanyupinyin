@@ -7,7 +7,7 @@
 list_phrases()
 }
 \value{
-A data frame with columns \code{phrase} and \code{reading}.
+A data frame with columns \code{phrase}, \code{tone}, and \code{marks}.
 }
 \description{
 List Custom Polyphone Phrases

@@ -12,14 +12,23 @@ test_that("toneless mode works", {
   expect_equal(to_pinyin_toneless("\u6625\u7720\u4e0d\u89c9\u6653"), "chun_mian_bu_jue_xiao")
 })
 
-test_that("tone marks mode works", {
-  expect_equal(to_pinyin_marks("\u6625\u7720\u4e0d\u89c9\u6653"), "chūn_mián_bù_jué_xiǎo")
-  expect_equal(to_pinyin_marks("Hello \u4e16\u754c", sep = " "), "Hello shì jiè")
+test_that("tone marks mode via to_pinyin works", {
+  expect_equal(to_pinyin("\u6625\u7720\u4e0d\u89c9\u6653", tone = "marks"), "ch\u016bn_mi\u00e1n_b\u00f9_ju\u00e9_xi\u01ceo")
+  expect_equal(to_pinyin("Hello \u4e16\u754c", sep = " ", tone = "marks"), "Hello sh\u00ec ji\u00e8")
+})
+
+test_that("tone marks wrapper works", {
+  expect_equal(to_pinyin_marks("\u6625\u7720\u4e0d\u89c9\u6653"), "ch\u016bn_mi\u00e1n_b\u00f9_ju\u00e9_xi\u01ceo")
 })
 
 test_that("tone marks handles neutral tone", {
-  # Characters marked as tone 5 in Unihan (e.g. \u4e86 le5) lose the mark
-  expect_equal(to_pinyin_marks("\u597d\u4e86"), "hǎo_le")
+  expect_equal(to_pinyin("\u597d\u4e86", tone = "marks"), "h\u01ceo_le")
+})
+
+test_that("tone marks with polyphone works for built-in phrases", {
+  # Built-in phrase "yin2 hang2" should auto-convert to marks
+  expect_equal(to_pinyin("\u94f6\u884c", polyphone = TRUE, tone = "marks"), "y\u00edn_h\u00e1ng")
+  expect_equal(to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE, tone = "marks"), "y\u00edn_h\u00e1ng_h\u00e1ng_zh\u01ceng")
 })
 
 test_that("initials extraction works", {
@@ -35,14 +44,32 @@ test_that("variable name generation works", {
   expect_equal(to_varname("1\u5f00\u59cb"), c("X1_kai_shi"))
 })
 
-test_that("polyphone phrase table works", {
-  # default sep is "_", so spaces inside phrase readings are replaced by sep
+test_that("polyphone phrase table works in numeric mode", {
   expect_equal(to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE), "yin2_hang2_hang2_zhang3")
 })
 
-test_that("user-defined phrases work", {
+test_that("polyphone phrase table works in marks mode", {
+  expect_equal(to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE, tone = "marks"), "y\u00edn_h\u00e1ng_h\u00e1ng_zh\u01ceng")
+})
+
+test_that("user-defined phrases with numeric reading work in both modes", {
   add_phrase("\u6d4b\u8bd5\u77ed\u8bed", "ce4 shi4 duan3 yu3")
   expect_equal(to_pinyin("\u6d4b\u8bd5\u77ed\u8bed", polyphone = TRUE), "ce4_shi4_duan3_yu3")
+  expect_equal(to_pinyin("\u6d4b\u8bd5\u77ed\u8bed", polyphone = TRUE, tone = "marks"), "c\u00e8_sh\u00ec_du\u01cen_y\u01d4")
+})
+
+test_that("user-defined phrases with mark reading work in both modes", {
+  add_phrase("\u81ea\u5b9a\u4e49\u8bcd", "z\u00ec d\u00ecng y\u00ec c\u00ed")
+  expect_equal(to_pinyin("\u81ea\u5b9a\u4e49\u8bcd", polyphone = TRUE, tone = "marks"), "z\u00ec_d\u00ecng_y\u00ec_c\u00ed")
+  expect_equal(to_pinyin("\u81ea\u5b9a\u4e49\u8bcd", polyphone = TRUE), "zi4_ding4_yi4_ci2")
+})
+
+test_that("list_phrases returns both tone and marks columns", {
+  df <- list_phrases()
+  expect_true("tone" %in% names(df))
+  expect_true("marks" %in% names(df))
+  expect_type(df$tone, "character")
+  expect_type(df$marks, "character")
 })
 
 test_that("non-Chinese characters are handled", {

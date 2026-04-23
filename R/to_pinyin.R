@@ -7,7 +7,8 @@
 #' @param x A character vector.
 #' @param sep Separator between syllables. Default is `"_"`.
 #' @param tone If `TRUE` (default), returns Pinyin with numeric tones (e.g.
-#'   `qiu1`). If `FALSE`, returns toneless Pinyin (e.g. `qiu`).
+#'   `qiu1`). If `FALSE`, returns toneless Pinyin (e.g. `qiu`). If `"marks"`,
+#'   returns Pinyin with diacritic tone marks (e.g. `qiū`).
 #' @param polyphone If `FALSE` (default), each character is converted
 #'   independently using its most common reading. If `TRUE`, a built-in phrase
 #'   table is used to resolve common polyphones via greedy longest-match
@@ -22,6 +23,7 @@
 #' to_pinyin("\u6625\u7720\u4e0d\u89c9\u6653")
 #' to_pinyin("Hello \u4e16\u754c", sep = " ", other_replace = "?")
 #' to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE)
+#' to_pinyin("\u6625\u7720\u4e0d\u89c9\u6653", tone = "marks")
 to_pinyin <- function(x,
                       sep = "_",
                       tone = TRUE,
@@ -31,10 +33,19 @@ to_pinyin <- function(x,
     stop("`x` must be a character vector.", call. = FALSE)
   }
 
-  env <- if (tone) .pinyin_env else .pinyin_toneless_env
+  use_marks <- identical(tone, "marks")
+  env <- if (isTRUE(tone)) {
+    .pinyin_env
+  } else if (use_marks) {
+    .pinyin_marks_env
+  } else {
+    .pinyin_toneless_env
+  }
+
   if (polyphone) {
     vapply(x, to_pinyin_poly, character(1),
-           sep = sep, env = env, other_replace = other_replace,
+           sep = sep, env = env, use_marks = use_marks,
+           other_replace = other_replace,
            USE.NAMES = FALSE
     )
   } else {
@@ -113,7 +124,7 @@ to_pinyin_single <- function(x, sep, env, other_replace) {
 }
 
 #' @noRd
-to_pinyin_poly <- function(x, sep, env, other_replace) {
+to_pinyin_poly <- function(x, sep, env, use_marks, other_replace) {
   if (is.na(x) || nchar(x) == 0) {
     return(x)
   }
@@ -154,7 +165,14 @@ to_pinyin_poly <- function(x, sep, env, other_replace) {
         if (k + plen - 1 <= length(cjk_run)) {
           seg <- paste(cjk_run[k:(k + plen - 1)], collapse = "")
           if (identical(seg, pk)) {
-            reading <- gsub(" ", sep, phrases[[pk]], fixed = TRUE)
+            reading_obj <- phrases[[pk]]
+            if (is.list(reading_obj)) {
+              reading <- if (use_marks) reading_obj$marks else reading_obj$tone
+            } else {
+              # backward compatibility for old string storage
+              reading <- reading_obj
+            }
+            reading <- gsub(" ", sep, reading, fixed = TRUE)
             result <- c(result, reading)
             result_is_cjk <- c(result_is_cjk, TRUE)
             k <- k + plen
@@ -193,10 +211,7 @@ to_pinyin_toneless <- function(x, sep = "_", polyphone = FALSE, other_replace = 
 
 #' Convert to Pinyin with Tone Marks
 #'
-#' A convenience wrapper that returns Pinyin with diacritic tone marks
-#' (e.g. `qiū` instead of `qiu1`). The data come directly from the
-#' Unicode Unihan `kMandarin` field, so they are authoritative and
-#' correctly handle edge cases such as the neutral tone (e.g. `zi5` → `zi`).
+#' A convenience wrapper around [to_pinyin()] with `tone = "marks"`.
 #'
 #' @param x A character vector.
 #' @param sep Separator between syllables. Default is `"_"`.
@@ -207,20 +222,7 @@ to_pinyin_toneless <- function(x, sep = "_", polyphone = FALSE, other_replace = 
 #' to_pinyin_marks("\u6625\u7720\u4e0d\u89c9\u6653")
 #' to_pinyin_marks("Hello \u4e16\u754c", sep = " ")
 to_pinyin_marks <- function(x, sep = "_", polyphone = FALSE, other_replace = NULL) {
-  if (!is.character(x)) {
-    stop("`x` must be a character vector.", call. = FALSE)
-  }
-  if (polyphone) {
-    vapply(x, to_pinyin_poly, character(1),
-           sep = sep, env = .pinyin_marks_env, other_replace = other_replace,
-           USE.NAMES = FALSE
-    )
-  } else {
-    vapply(x, to_pinyin_single, character(1),
-           sep = sep, env = .pinyin_marks_env, other_replace = other_replace,
-           USE.NAMES = FALSE
-    )
-  }
+  to_pinyin(x, sep = sep, tone = "marks", polyphone = polyphone, other_replace = other_replace)
 }
 
 #' Extract Pinyin Initials
@@ -302,18 +304,21 @@ to_varname <- function(x,
 #' Add a Custom Polyphone Phrase
 #'
 #' Allows users to extend the built-in phrase table with their own
-#' multi-character phrases and readings.
+#' multi-character phrases and readings. The reading can be given in either
+#' numeric tone form (e.g. `"hang2 zhang3"`) or tone-mark form
+#' (e.g. `"háng zhǎng"`); both forms are stored internally so the phrase
+#' works correctly with all `tone` settings.
 #'
 #' @param phrase A Chinese character string (e.g. `"\u884c\u957f"`).
 #' @param reading The corresponding Pinyin reading as a single string
-#'   (e.g. `"hang2 zhang3"` or `"hang_zhang"`). The separator used here
-#'   will be preserved when `polyphone = TRUE`.
+#'   (e.g. `"hang2 zhang3"` or `"háng zhǎng"`).
 #'
 #' @return Invisibly returns `NULL`.
 #' @export
 #' @examples
 #' add_phrase("\u884c\u957f", "hang2 zhang3")
 #' to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE)
+#' to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE, tone = "marks")
 add_phrase <- function(phrase, reading) {
   if (!is.character(phrase) || length(phrase) != 1 || nchar(phrase) < 2) {
     stop("`phrase` must be a single string of at least 2 Chinese characters.", call. = FALSE)
@@ -322,13 +327,20 @@ add_phrase <- function(phrase, reading) {
     stop("`reading` must be a single string.", call. = FALSE)
   }
   env <- get_phrase_env()
-  env[[phrase]] <- reading
+  style <- detect_reading_style(reading)
+  if (style == "tone") {
+    env[[phrase]] <- list(tone = reading, marks = num_to_mark(reading))
+  } else if (style == "marks") {
+    env[[phrase]] <- list(tone = mark_to_num(reading), marks = reading)
+  } else {
+    env[[phrase]] <- list(tone = reading, marks = reading)
+  }
   invisible(NULL)
 }
 
 #' List Custom Polyphone Phrases
 #'
-#' @return A data frame with columns `phrase` and `reading`.
+#' @return A data frame with columns `phrase`, `tone`, and `marks`.
 #' @export
 #' @examples
 #' list_phrases()
@@ -336,11 +348,21 @@ list_phrases <- function() {
   env <- get_phrase_env()
   keys <- ls(env, all.names = TRUE)
   if (length(keys) == 0) {
-    return(data.frame(phrase = character(0), reading = character(0), stringsAsFactors = FALSE))
+    return(data.frame(
+      phrase = character(0), tone = character(0), marks = character(0),
+      stringsAsFactors = FALSE
+    ))
   }
   data.frame(
     phrase = keys,
-    reading = vapply(keys, function(k) env[[k]], character(1)),
+    tone = vapply(keys, function(k) {
+      obj <- env[[k]]
+      if (is.list(obj)) obj$tone else obj
+    }, character(1), USE.NAMES = FALSE),
+    marks = vapply(keys, function(k) {
+      obj <- env[[k]]
+      if (is.list(obj)) obj$marks else obj
+    }, character(1), USE.NAMES = FALSE),
     stringsAsFactors = FALSE,
     row.names = NULL
   )
@@ -422,7 +444,131 @@ init_default_phrases <- function() {
   )
   for (nm in names(defaults)) {
     if (!exists(nm, envir = env, inherits = FALSE)) {
-      env[[nm]] <- defaults[[nm]]
+      reading <- defaults[[nm]]
+      env[[nm]] <- list(tone = reading, marks = num_to_mark(reading))
     }
   }
+}
+
+# ---------------------------------------------------------------------------
+# Internal tone conversion utilities
+# ---------------------------------------------------------------------------
+
+#' @noRd
+detect_reading_style <- function(reading) {
+  if (grepl("[1-5]", reading)) {
+    "tone"
+  } else if (grepl("[\u0101\u00e1\u01ce\u00e0\u0113\u00e9\u011b\u00e8\u012b\u00ed\u01d0\u00ec\u014d\u00f3\u01d2\u00f2\u016b\u00fa\u01d4\u00f9\u01d6\u01d8\u01da\u01dc\u00fc\u0144\u0148\u01f9\u1e3f]", reading, perl = TRUE)) {
+    "marks"
+  } else {
+    "toneless"
+  }
+}
+
+#' @noRd
+num_to_mark_syllable <- function(syl) {
+  tone <- as.integer(sub(".*([1-5])$", "\\1", syl))
+  if (is.na(tone)) return(syl)
+
+  base <- sub("[1-5]$", "", syl)
+  if (tone == 5) return(base)
+
+  chars <- strsplit(base, "")[[1]]
+
+  # Special standalone nasal syllables
+  if (identical(base, "m") && tone == 2) return("\u1e3f")
+  if (identical(base, "n")) {
+    if (tone == 2) return("\u0144")
+    if (tone == 3) return("\u0148")
+    if (tone == 4) return("\u01f9")
+    return(base)
+  }
+
+  target <- NA_integer_
+
+  pos_a <- which(chars == "a")
+  if (length(pos_a) > 0) {
+    target <- pos_a[1]
+  } else {
+    pos_e <- which(chars == "e")
+    pos_o <- which(chars == "o")
+    if (length(pos_e) > 0) {
+      target <- pos_e[1]
+    } else if (length(pos_o) > 0) {
+      target <- pos_o[1]
+    } else {
+      pos_i <- which(chars == "i")
+      pos_u <- which(chars == "u")
+      pos_v <- which(chars == "v" | chars == "\u00fc")
+      if (length(pos_i) > 0 && length(pos_u) > 0) {
+        # iu -> mark u (later one); ui -> mark i (later one)
+        target <- max(pos_i[1], pos_u[1])
+      } else if (length(pos_v) > 0) {
+        target <- pos_v[1]
+      } else {
+        vowels <- c("i", "u")
+        pos <- which(chars %in% vowels)
+        if (length(pos) > 0) target <- pos[1]
+      }
+    }
+  }
+
+  if (is.na(target)) return(base)
+
+  tone_map <- list(
+    a = c("\u0101", "\u00e1", "\u01ce", "\u00e0"),
+    e = c("\u0113", "\u00e9", "\u011b", "\u00e8"),
+    i = c("\u012b", "\u00ed", "\u01d0", "\u00ec"),
+    o = c("\u014d", "\u00f3", "\u01d2", "\u00f2"),
+    u = c("\u016b", "\u00fa", "\u01d4", "\u00f9"),
+    v = c("\u01d6", "\u01d8", "\u01da", "\u01dc"),
+    "\u00fc" = c("\u01d6", "\u01d8", "\u01da", "\u01dc")
+  )
+
+  ch <- chars[target]
+  if (ch %in% names(tone_map)) {
+    chars[target] <- tone_map[[ch]][tone]
+  }
+  paste(chars, collapse = "")
+}
+
+#' @noRd
+mark_to_num_syllable <- function(syl) {
+  mark_map <- c(
+    "\u0101" = "a1", "\u00e1" = "a2", "\u01ce" = "a3", "\u00e0" = "a4",
+    "\u0113" = "e1", "\u00e9" = "e2", "\u011b" = "e3", "\u00e8" = "e4",
+    "\u012b" = "i1", "\u00ed" = "i2", "\u01d0" = "i3", "\u00ec" = "i4",
+    "\u014d" = "o1", "\u00f3" = "o2", "\u01d2" = "o3", "\u00f2" = "o4",
+    "\u016b" = "u1", "\u00fa" = "u2", "\u01d4" = "u3", "\u00f9" = "u4",
+    "\u01d6" = "v1", "\u01d8" = "v2", "\u01da" = "v3", "\u01dc" = "v4",
+    "\u00fc" = "v0",
+    "\u0144" = "n2", "\u0148" = "n3", "\u01f9" = "n4",
+    "\u1e3f" = "m2"
+  )
+
+  out <- syl
+  tone_num <- "5"
+  for (mk in names(mark_map)) {
+    if (grepl(mk, out, fixed = TRUE)) {
+      out <- gsub(mk, substr(mark_map[mk], 1, 1), out, fixed = TRUE)
+      tone_num <- substr(mark_map[mk], 2, 2)
+    }
+  }
+  # If no tone mark was found and no trailing digit, return as-is
+  if (tone_num == "5" && !grepl("[1-5]$", syl)) {
+    return(out)
+  }
+  paste0(out, tone_num)
+}
+
+#' @noRd
+num_to_mark <- function(s) {
+  words <- strsplit(s, " ", fixed = TRUE)[[1]]
+  paste(vapply(words, num_to_mark_syllable, character(1), USE.NAMES = FALSE), collapse = " ")
+}
+
+#' @noRd
+mark_to_num <- function(s) {
+  words <- strsplit(s, " ", fixed = TRUE)[[1]]
+  paste(vapply(words, mark_to_num_syllable, character(1), USE.NAMES = FALSE), collapse = " ")
 }
