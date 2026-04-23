@@ -52,6 +52,11 @@ test_that("polyphone phrase table works in marks mode", {
   expect_equal(to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE, tone = "marks"), "y\u00edn_h\u00e1ng_h\u00e1ng_zh\u01ceng")
 })
 
+test_that("polyphone phrase table works in toneless mode", {
+  expect_equal(to_pinyin("\u94f6\u884c\u884c\u957f", polyphone = TRUE, tone = FALSE), "yin_hang_hang_zhang")
+  expect_equal(to_pinyin("\u88ab\u5b50", polyphone = TRUE, tone = FALSE), "bei_zi")
+})
+
 test_that("user-defined phrases with numeric reading work in both modes", {
   add_phrase("\u6d4b\u8bd5\u77ed\u8bed", "ce4 shi4 duan3 yu3")
   expect_equal(to_pinyin("\u6d4b\u8bd5\u77ed\u8bed", polyphone = TRUE), "ce4_shi4_duan3_yu3")

@@ -33,18 +33,22 @@ to_pinyin <- function(x,
     stop("`x` must be a character vector.", call. = FALSE)
   }
 
-  use_marks <- identical(tone, "marks")
-  env <- if (isTRUE(tone)) {
-    .pinyin_env
-  } else if (use_marks) {
-    .pinyin_marks_env
+  style <- if (identical(tone, "marks")) {
+    "marks"
+  } else if (isTRUE(tone)) {
+    "tone"
   } else {
-    .pinyin_toneless_env
+    "toneless"
   }
+  env <- switch(style,
+    marks = .pinyin_marks_env,
+    tone = .pinyin_env,
+    .pinyin_toneless_env
+  )
 
   if (polyphone) {
     vapply(x, to_pinyin_poly, character(1),
-           sep = sep, env = env, use_marks = use_marks,
+           sep = sep, env = env, style = style,
            other_replace = other_replace,
            USE.NAMES = FALSE
     )
@@ -124,7 +128,7 @@ to_pinyin_single <- function(x, sep, env, other_replace) {
 }
 
 #' @noRd
-to_pinyin_poly <- function(x, sep, env, use_marks, other_replace) {
+to_pinyin_poly <- function(x, sep, env, style, other_replace) {
   if (is.na(x) || nchar(x) == 0) {
     return(x)
   }
@@ -167,10 +171,14 @@ to_pinyin_poly <- function(x, sep, env, use_marks, other_replace) {
           if (identical(seg, pk)) {
             reading_obj <- phrases[[pk]]
             if (is.list(reading_obj)) {
-              reading <- if (use_marks) reading_obj$marks else reading_obj$tone
+              reading <- switch(style,
+                marks = reading_obj$marks,
+                toneless = strip_tone(reading_obj$tone),
+                reading_obj$tone
+              )
             } else {
               # backward compatibility for old string storage
-              reading <- reading_obj
+              reading <- if (identical(style, "toneless")) strip_tone(reading_obj) else reading_obj
             }
             reading <- gsub(" ", sep, reading, fixed = TRUE)
             result <- c(result, reading)
@@ -453,6 +461,11 @@ init_default_phrases <- function() {
 # ---------------------------------------------------------------------------
 # Internal tone conversion utilities
 # ---------------------------------------------------------------------------
+
+#' @noRd
+strip_tone <- function(s) {
+  gsub("[1-5]", "", s)
+}
 
 #' @noRd
 detect_reading_style <- function(reading) {
