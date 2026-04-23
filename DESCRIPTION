@@ -1,6 +1,6 @@
 Package: hanyupinyin
 Title: Convert Chinese Characters into Hanyu Pinyin
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: 
     person("Haoran", "Cui", , "hao.ran.cui@ktstat.com", role = c("aut", "cre"))
 Description: Convert Chinese characters into Hanyu Pinyin (the official 

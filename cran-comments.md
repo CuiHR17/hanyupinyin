@@ -1,16 +1,15 @@
 ## CRAN submission comments
 
-### Initial submission
+### Submission (v0.1.2)
 
-This is the first submission of `hanyupinyin`.
+This is a minor update adding a new exported function.
 
-### Relationship to the orphaned `pinyin` package
-
-The CRAN package `pinyin` was archived on 2026-04-11 because emails to the maintainer were undeliverable. `hanyupinyin` is a ground-up rewrite inspired by that package, but it is **not** a fork. It uses the authoritative Unicode Unihan Database as its dictionary source, provides a fully vectorized engine, and offers a modern R API.
+* Added `to_pinyin_marks()` which returns Pinyin with diacritic tone marks
+  (e.g. `qiū`) directly from the Unicode Unihan `kMandarin` field.
 
 ### R CMD check results
 
-There were no ERRORs, no WARNINGs, and no NOTEs (other than the standard first-submission note about maintainer confirmation).
+There were no ERRORs, no WARNINGs, and no NOTEs.
 
 ### Downstream dependencies
 
